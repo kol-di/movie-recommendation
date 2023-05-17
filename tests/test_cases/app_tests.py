@@ -4,8 +4,6 @@ from contextlib import contextmanager
 from typing import ContextManager
 from jinja2.environment import Template
 
-from app import app
-
 
 @contextmanager
 def captured_templates(flask_app: Flask) -> ContextManager[list]:
@@ -27,8 +25,11 @@ def captured_templates(flask_app: Flask) -> ContextManager[list]:
 class AppTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.client = app.test_client()
-        self.request_context = app.test_request_context()
+        from app import app
+        self.app = app
+        self.app.testing = True
+        self.client = self.app.test_client()
+        self.request_context = self.app.test_request_context()
 
     def test_hello_world_redirect(self) -> None:
         # Request context to build URL adapter
@@ -38,7 +39,7 @@ class AppTestCase(unittest.TestCase):
             self.assertEqual(response.location, url_for('get_user_recommendations'))  # Expecting proper redirect url
 
     def test_get_user_recommendations_get(self) -> None:
-        with captured_templates(app) as templates:
+        with captured_templates(self.app) as templates:
             response = self.client.get('/recommend')
             self.assertEqual(response.status_code, 200)  # Expecting success
             self.assertEqual(len(templates), 1)  # Expecting one template
@@ -49,7 +50,7 @@ class AppTestCase(unittest.TestCase):
         user_id = 17
         num_recs = 26
 
-        with captured_templates(app) as templates:
+        with captured_templates(self.app) as templates:
             response = self.client.post('/recommend', data={
                 'user_id': user_id,
                 'num_recs': num_recs
@@ -68,8 +69,3 @@ class AppTestCase(unittest.TestCase):
     def test_method_not_allowed(self) -> None:
         response = self.client.patch('/recommend')  # Invalid method
         self.assertEqual(response.status_code, 405)  # Expecting Method Not Allowed
-
-
-if __name__ == '__main__':
-    app.testing = True
-    unittest.main()
