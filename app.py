@@ -1,5 +1,6 @@
 from flask import Flask, redirect, url_for, request, render_template, abort
 from forms import RecommendForm
+from recsys.model import ALS_model
 
 app = Flask(__name__)
 
@@ -12,6 +13,10 @@ def root():
 
 @app.route('/recommend', methods=['GET', 'POST'])
 def get_user_recommendations():
+    """
+    Displays form for user recommendation retrival,
+    gets model recommendations, presents the results
+    """
     form = RecommendForm(request.form)
 
     match request.method:
@@ -22,10 +27,9 @@ def get_user_recommendations():
         case 'POST':
             # On form submission return template with the form and submission results
             if form.validate_on_submit():
-                user_id = 17
-                rec = ['abc', 'def', 'dcsd', 'dfcsd', 'sdcsd', 'sdcs']
+                rec = ALS_model.get_user_recommendations(**form.data)
                 result = {
-                    'user_id': user_id,
+                    'user_id': form.data['user_id'],
                     'rec': rec
                 }
                 return render_template('result.html', form=form, result=result)
