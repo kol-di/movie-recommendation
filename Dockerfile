@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10-slim as base
 
 WORKDIR /app
 COPY ./requirements.txt /app
@@ -15,6 +15,9 @@ COPY recsys ./recsys
 COPY templates ./templates
 COPY tests ./tests
 
-EXPOSE 5000
+FROM base as test
+RUN ["python", "-m", "unittest", "tests/run_tests.py"]
 
+FROM base as application
+EXPOSE 5000
 CMD ["flask", "run", "--host", "0.0.0.0"]
