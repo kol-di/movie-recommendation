@@ -1,0 +1,34 @@
+{% extends "recommend.html" %}
+
+{% block result %}
+
+<style>
+  .table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .table td:last-child {
+    width: 70%;
+  }
+</style>
+
+<table class="table">
+  <tbody>
+    <tr>
+      <td class="label"><strong>ID Пользователя</strong></td>
+      <td>{{ result.user_id }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Рекомендованные Фильмы</strong></td>
+      <td>
+        <ol>
+          {% for single_rec in result.rec %}
+          <li>{{ single_rec }}</li>
+          {% endfor %}
+        </ol>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+{% endblock %}
